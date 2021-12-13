@@ -6,6 +6,10 @@
 pip3 install vaderSentiment
 pip3 install scylla-driver
 pip3 install textblob
+pip3 install spacy
+pip3 install nltk
+python3 -m nltk.downloader popular
+python3 -m spacy download en_core_web_sm
 
 ## Run notebook
 # Http tunnel to jupyter-notebook running on pulsar1
