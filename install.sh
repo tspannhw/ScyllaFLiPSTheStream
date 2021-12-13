@@ -4,6 +4,12 @@
 ## only one Python
 ## installed libraries
 pip3 install vaderSentiment
+pip3 install scylla-driver
+pip3 install textblob
+
+## Run notebook
+# Http tunnel to jupyter-notebook running on pulsar1
+# ssh -L 8888:localhost:8888 tspann@pulsar1
 
 clear
 
@@ -18,3 +24,5 @@ bin/pulsar-client consume "persistent://public/default/chatresult2" -s "chatresu
 
 ## Reference
 echo 'https://github.com/tspannhw/pulsar-pychat-function'
+echo 'https://github.com/tspannhw/FLiP-Meetup-Chat'
+
