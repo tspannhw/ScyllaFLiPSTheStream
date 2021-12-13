@@ -17,6 +17,8 @@ python3 -m spacy download en_core_web_sm
 
 clear
 
+bin/pulsar-admin functions list  --namespace default --tenant public
+
 bin/pulsar-admin functions stop --name Chat2 --namespace default --tenant public
 
 bin/pulsar-admin functions delete --name Chat2 --namespace default --tenant public
