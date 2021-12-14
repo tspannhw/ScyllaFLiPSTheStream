@@ -7,6 +7,21 @@
     overflow: auto;
     border: 1px solid gray;
 }
+#weather 
+ {
+    height: 40ex;
+    overflow: auto;
+    border: 1px solid gray;
+}
+table {
+    border: 0;
+    width: 100%;
+    overflow: auto;
+    vertical-align: top;
+    text-align: left;
+    table-layout:fixed;
+    word-wrap:break-word;
+}
 </style>
 </head>
 <body bgcolor="white" text="black">
@@ -65,14 +80,12 @@ websocket.onopen = function(evt) {
 };
 websocket.onerror = function(evt) {console.log('ERR', evt)};
 websocket.onmessage = function(evt) {
-        console.log("sent");
-        console.log(evt.data);
-        var dataPoints = JSON.parse(evt.data);
+        //console.log(evt.data);
+        //var dataPoints = JSON.parse(evt.data);
 
-        console.log(dataPoints.messageId);
-        console.log(dataPoints.result);
-
-
+        //console.log(dataPoints.messageId);
+        //console.log(dataPoints.result);
+        // dataPoints.context dataPoints.errorCode dataPoints.schemaVersion
 }
 websocket.onclose = function(evt) {
   if (evt.wasClean) {
@@ -98,7 +111,28 @@ form.onsubmit = function() {
 </script>
 <img src="https://streamnative.io/uploads/images/home/unified_messaging_model.svg" border="0" width="50" height="50" alt="x">
 <br>
-<div id="results"> </div>
+        <table width="100%" border="0">
+                <tr>
+                       <th><b>Sentiment</b></th>
+                       <th><b>Publish Time</b></th>
+                       <th><b>Message</b></th>
+                       <th><b>By</b></th>
+                       <th><b>--</b></th>
+                </tr></table>
+                <div id="results"></div><br>
+
+        <table width="100%" border="0"><tr>
+                                <th><b>Location</b></th>
+                       <th><b>Obs Time</b></th>
+                               <th><b>Weather</b></th>
+                       <th><b>Temp</b></th>
+                       <th><b>Windchill</b></th>
+                       <th><b>Lat/Long</b></th>
+                       <th><b>Pressure</b></th>
+                       <th><b>Publish Time</b></th>
+                       <th><b> [--] </b></th>
+                                      </tr></table>
+                                      <div id="weather"> </div>
 <script>
 //function to check if element is scrolled to the bottom
 function isElementScrolledToBottom(el) {
@@ -107,12 +141,67 @@ function isElementScrolledToBottom(el) {
   }
   return false;
 }
+function isEmpty(val){
+    return (val === undefined || val == null || val.length <= 0) ? true : false;
+}
 //function to scroll to bottom
 function scrollToBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
 // ws://nvidia-desktop:8080/ws/v2/consumer/persistent/public/default/userstream/usr-reader?subscriptionType=Shared
-var wsUri = "ws://pulsar1:8080/ws/v2/consumer/persistent/public/default/chatresult2/chatrreader?subscriptionType=Shared";
+var wsUri = "ws://pulsar1:8080/ws/v2/consumer/persistent/public/default/chatresult2/chatrreader?subscriptionType=Shared&receiverQueueSize=500";
+websocket = new WebSocket(wsUri);
+websocket.onopen = function(evt) {
+   console.log('open');
+};
+websocket.onerror = function(evt) {console.log('ERR', evt)};
+websocket.onmessage = function(evt) {
+
+    var dataPoints = JSON.parse(evt.data);
+    var dataBuffer = "";
+    var output = document.getElementById("results");
+
+    if ( dataPoints === undefined || dataPoints == null || dataPoints.payload === undefined || dataPoints.payload == null ) {
+            return;
+    }
+    if (IsJsonString(atob(dataPoints.payload))) { 
+         var pulsarMessage = JSON.parse(atob(dataPoints.payload));
+         if ( pulsarMessage === undefined || pulsarMessage == null ) {
+                 return;
+         }
+         var sentiment = "";
+         if ( !isEmpty(pulsarMessage.sentiment) ) {
+                 sentiment = pulsarMessage.sentiment;
+         }
+         var publishTime = "";
+         if ( !isEmpty(dataPoints.publishTime) ) {
+                 publishTime = dataPoints.publishTime;
+         }
+         var comment = "";
+         if ( !isEmpty(pulsarMessage.comment) ) {
+                 comment = pulsarMessage.comment;
+         }
+         var userInfo= "";
+         if ( !isEmpty(pulsarMessage.userInfo) ) {
+                userInfo = pulsarMessage.userInfo;
+         }          
+         var contactInfo= "";
+         if ( !isEmpty(pulsarMessage.contactInfo) ) {
+                 contactInfo = pulsarMessage.contactInfo;
+         } 
+
+         dataBuffer = "<p>";
+         dataBuffer += "<table><tr><td>" + sentiment;
+         dataBuffer += " </td><td>" + publishTime;
+         dataBuffer += " </td><td>" + comment;
+         dataBuffer += " </td><td> " + userInfo + "</td><td>" + contactInfo + " </td></tr></table></p>\n";
+         }
+    output.innerHTML +=  dataBuffer;
+    scrollToBottom(output);
+};
+
+// weather
+var wsUri = "ws://pulsar1:8080/ws/v2/consumer/persistent/public/default/weather/weatherreader?subscriptionType=Shared&receiverQueueSize=50";
 websocket = new WebSocket(wsUri);
 websocket.onopen = function(evt) {
    console.log('open');
@@ -122,34 +211,54 @@ websocket.onmessage = function(evt) {
 
     var dataPoints = JSON.parse(evt.data);
 
-    var output = document.getElementById("results");
-        console.log('adp:'+atob(dataPoints.payload));
+    var wthr = document.getElementById("weather");
 
-    if (!IsJsonString(atob(dataPoints.payload))) { 
-    //var pulsarMessage = JSON.parse(atob(dataPoints.payload));
-    var dataBuffer = "<p>" + atob(dataPoints.payload);
+    if ( dataPoints === undefined || dataPoints == null || dataPoints.payload === undefined || dataPoints.payload == null ) {
+            return;
     }
-        else {
-    var pulsarMessage = JSON.parse(atob(dataPoints.payload));
-    var dataBuffer = "<p>" 
 
-        // add sentiment to end
-        // add wiki / doc lookup
-        // add weather / news / twitter / images
-    dataBuffer += "<b>Message ID:</b> " + dataPoints.messageId;
-    dataBuffer += " <b>Key:</b> " + dataPoints.properties.key;
-    dataBuffer += " <b>ID:</b> " + pulsarMessage.id;
-    dataBuffer += " <b>Sentiment:</b> " + pulsarMessage.sentiment;
-    dataBuffer += " <b>Publish Time:</b> " + dataPoints.publishTime;
-    dataBuffer += " <b>Msg:</b> " + pulsarMessage.comment;
-    dataBuffer += " <b>By:</b> " + pulsarMessage.userInfo + "@" + pulsarMessage.contactInfo;
+    if (IsJsonString(atob(dataPoints.payload))) {
+    
+        var pulsarMessage = JSON.parse(atob(dataPoints.payload));
+         if ( pulsarMessage === undefined || pulsarMessage == null ) {
+                 return;
+         }
+
+        var pressure = "";
+
+        if ( !isEmpty(pulsarMessage.pressure_string) ) {
+                pressure = pulsarMessage.pressure_string;
+        }
+
+        var windchill = "";
+
+        if ( !isEmpty(pulsarMessage.windchill_string) ) {
+                windchill = pulsarMessage.windchill_string;
+        }
+
+        var dataBuffer = "<table><tr><td>" + pulsarMessage.location + " </td>";
+        dataBuffer += "<td>" + pulsarMessage.observation_time + " </td>";
+        dataBuffer += "<td>" + pulsarMessage.weather + " </td>"; 
+        dataBuffer += "<td>" + pulsarMessage.temperature_string  + " </td>";  
+        dataBuffer += "<td>" + windchill  + " </td>"; 
+        dataBuffer += "<td>" + pulsarMessage.latitude +","+  pulsarMessage.longitude + " </td>"; 
+        dataBuffer += "<td>" + pressure + " </td>"; 
+        dataBuffer += "<td>" + dataPoints.publishTime + " </td>";
+                if(isEmpty(pulsarMessage.icon_url_name)){
+                        dataBuffer += "<td> &nbsp; </td>";
+                }
+                else {
+                        dataBuffer += "<td><img src=\"" + 
+                           pulsarMessage.icon_url_base + pulsarMessage.icon_url_name  + "\" border=\"0\"></td>";
+                }
+            dataBuffer += "</tr></table>\n";
                  }
-    output.innerHTML = output.innerHTML +  dataBuffer + "</p>";
-    scrollToBottom(output);
+    wthr.innerHTML +=  dataBuffer;
+    scrollToBottom(wthr);
 };
 
 </script>
 <p></p><br>
-&copy; 2021 Tim Spann @PaasDev - datainmotion.dev - streamnative.io
+&copy; 2021/2022 Tim Spann @PaasDev - datainmotion.dev - streamnative.io
 </body>
 </html>
