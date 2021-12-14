@@ -1,0 +1,179 @@
+<html>
+<head>
+<title>Apache Pulsar - Websockets - Data Tables - Meetup Chat</title>
+<link rel="stylesheet" type="text/css"  href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+</head>
+<body bgcolor="white" text="black">
+<img data-v-c612f5f2="" alt="StreamNative Logo" src="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png" width="543" data-src="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png" data-srcset="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png 543w" data-sizes="(max-width: 543px) 100vw, 543px" class="w-56 mt-4 md:mt-0 g-image g-image--lazy g-image--loaded" srcset="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png 543w" sizes="(max-width: 543px) 100vw, 543px">
+<form action="/index.html" method="post" enctype="multipart/form-data" id="form-id">
+    <div id="demo" name="demo"></demo>
+      <!-- field1 -->
+    <p><label>User: </label><input name="user" type="text" id="user-id" size="100" value=""/>
+    </p>
+
+    <!-- field 2 -->
+    <p><label>Question: </label><textarea rows="5" cols="80" name="other-field" type="text" id="other-field-id" width="300"></textarea>
+    </p>
+
+      <!-- field 3 -->
+    <p><label>Contact Info: </label><input name="contactinfo" type="text" id="contactinfo-id" size="75" value=""/>
+    </p>
+
+    <p><input type="submit" value="Send to Pulsar" /></p>
+</form>
+<script>
+function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+/// send the information to the server
+function loadDoc() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("demo").innerHTML = '';
+    }
+  };
+
+//var wsUri = "ws://nvidia-desktop:8080/ws/v2/producer/persistent/public/default/chat2";
+//var wsUri = "ws://pulsar1:31633/ws/v2/producer/persistent/public/default/chat2";
+var wsUri = "ws://pulsar1:8080/ws/v2/producer/persistent/public/default/chat2";
+
+websocket = new WebSocket(wsUri);
+
+const pulsarObject = { userInfo: document.getElementById('user-id').value, contactInfo: document.getElementById('contactinfo-id').value, comment: document.getElementById('other-field-id').value};
+const jsonStr = JSON.stringify(pulsarObject);
+var payloadStr = btoa(jsonStr);
+const propertiesObject = {key: Date.now() }
+var data = JSON.stringify({ "payload": payloadStr, "properties": propertiesObject, "context": "cs" });
+
+websocket.onopen = function(evt) {
+   if (websocket.readyState === WebSocket.OPEN) {
+           websocket.send(data);
+   }
+};
+websocket.onerror = function(evt) {console.log('ERR', evt)};
+websocket.onmessage = function(evt) {
+        //console.log(evt.data);
+        //var dataPoints = JSON.parse(evt.data);
+
+        //console.log(dataPoints.messageId);
+        //console.log(dataPoints.result);
+        // dataPoints.context dataPoints.errorCode dataPoints.schemaVersion
+}
+websocket.onclose = function(evt) {
+  if (evt.wasClean) {
+    console.log(evt);
+  } else {
+    console.log('[close] Connection died');
+  }
+};
+
+}
+
+var form = document.getElementById('form-id');
+
+form.onsubmit = function() {
+
+    // FormData receives the whole form
+    var formData = new FormData(form);
+    // We send the data where the form wanted
+    var action = form.getAttribute('action');
+    loadDoc();
+    return false;
+  }
+</script>
+<img src="https://streamnative.io/uploads/images/home/unified_messaging_model.svg" border="0" width="50" height="50" alt="x">
+<br>
+        <br><br>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                       <th><b>Sentiment</b></th>
+                       <th><b>Publish Time</b></th>
+                       <th><b>Message</b></th>
+                       <th><b>User</b></th>
+                       <th><b>Contact Info</b></th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                       <th><b>Sentiment</b></th>
+                       <th><b>Publish Time</b></th>
+                       <th><b>Message</b></th>
+                       <th><b>User</b></th>
+                       <th><b>Contact Info</b></th>
+            </tr>
+        </tfoot>
+    </table>
+
+<script>
+function isEmpty(val){
+    return (val === undefined || val == null || val.length <= 0) ? true : false;
+}
+function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+$(document).ready(function() {
+    var t = $('#example').DataTable();
+
+var wsUri = "ws://pulsar1:8080/ws/v2/consumer/persistent/public/default/chatresult2/chatrreader?subscriptionType=Shared&receiverQueueSize=500";
+websocket = new WebSocket(wsUri);
+websocket.onopen = function(evt) {
+   console.log('open');
+};
+websocket.onerror = function(evt) {console.log('ERR', evt)};
+websocket.onmessage = function(evt) {
+
+    var dataPoints = JSON.parse(evt.data);
+    if ( dataPoints === undefined || dataPoints == null || dataPoints.payload === undefined || dataPoints.payload == null ) {
+            return;
+    }
+    if (IsJsonString(atob(dataPoints.payload))) {
+         var pulsarMessage = JSON.parse(atob(dataPoints.payload));
+         if ( pulsarMessage === undefined || pulsarMessage == null ) {
+                 return;
+         }
+         var sentiment = "";
+         if ( !isEmpty(pulsarMessage.sentiment) ) {
+                 sentiment = pulsarMessage.sentiment;
+         }
+         var publishTime = "";
+         if ( !isEmpty(dataPoints.publishTime) ) {
+                 publishTime = dataPoints.publishTime;
+         }
+         var comment = "";
+         if ( !isEmpty(pulsarMessage.comment) ) {
+                 comment = pulsarMessage.comment;
+         }
+         var userInfo= "";
+         if ( !isEmpty(pulsarMessage.userInfo) ) {
+                userInfo = pulsarMessage.userInfo;
+         }
+         var contactInfo= "";
+         if ( !isEmpty(pulsarMessage.contactInfo) ) {
+                 contactInfo = pulsarMessage.contactInfo;
+         }
+
+                 t.row.add( [ sentiment, publishTime, comment, userInfo, contactInfo ] ).draw(true );
+       }
+};
+
+} );
+</script>
+<p></p><br>
+&copy; 2021/2022 Tim Spann @PaasDev - datainmotion.dev - streamnative.io
+</body>
+</html>
