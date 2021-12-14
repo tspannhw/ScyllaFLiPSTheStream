@@ -1,0 +1,6 @@
+configs:
+    roots: "172.17.0.2:9042"
+    keyspace: "pulsar_test_keyspace"
+    columnFamily: "pulsar_test_table"
+    keyname: "key"
+    columnName: "col"
