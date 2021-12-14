@@ -7,14 +7,13 @@ Scylla FLiPS The Stream With Apache Pulsar
 ````
 
   
-bin/pulsar-admin sink stop --name scyalla-test-sink --namespace default --tenant public
+bin/pulsar-admin sink stop --name scylla-test-sink --namespace default --tenant public
 
-bin/pulsar-admin sinks delete --tenant public --namespace default --name scyalla-test-sink
+bin/pulsar-admin sinks delete --tenant public --namespace default --name scylla-test-sink
 
-bin/pulsar-admin topics create persistent://public/default/test_scylla
+bin/pulsar-admin topics create persistent://public/default/chatresult2
 
-bin/pulsar-admin sinks create --tenant public --namespace default --name "sink" \
-    --sink-type cassandra --sink-config-file conf/scylla.yml --inputs test_scylla
+bin/pulsar-admin sinks create --tenant public --namespace default --name "scylla-test-sink" --sink-type cassandra --sink-config-file conf/scylla.yml --inputs chatresult2
     
 ````
 ## HTML
