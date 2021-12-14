@@ -2,7 +2,7 @@ bin/pulsar-admin topics create persistent://public/default/test_scylla
 bin/pulsar-admin topics create persistent://public/default/chat2
 bin/pulsar-admin topics create persistent://public/default/chatresult2
 
-bin/pulsar-admin sinks create --tenant public --namespace default --name "sink" \
+bin/pulsar-admin sinks create --tenant public --namespace default --name "scylla-test-sink" \
     --sink-type cassandra --sink-config-file conf/scylla.yml --inputs chatresult2
 
 bin/pulsar-admin topics create persistent://public/default/iotjetsonjson
