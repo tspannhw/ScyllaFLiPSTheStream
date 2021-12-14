@@ -11,5 +11,13 @@ bin/pulsar-client consume "persistent://public/default/iotjetsonjson" -s "iotjjr
 bin/pulsar-admin topics create persistent://public/default/energy
 bin/pulsar-client consume "persistent://public/default/energy" -s "mobile2" -n 0
 
-# query data
+# create table from scylla cqlsh
+CREATE KEYSPACE pulsar_test_keyspace WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};
+CREATE TABLE pulsar_test_table (key text PRIMARY KEY, col text);
+CREATE INDEX ON pulsar_test_table(col);
+ 
+# query data - pulsar sql
 select from_utf8(__value__), __event_time__ from pulsar."public/default".chatresult2
+
+# query data - scylla
+select col from pulsar_test_table where key like '%Pulsar%' ALLOW FILTERING;
