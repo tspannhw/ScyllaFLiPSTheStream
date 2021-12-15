@@ -43,3 +43,4 @@ bin/pulsar-client consume "persistent://public/default/scyllacdcsource -s "cdcre
 #### Reference
 * https://github.com/scylladb/scylla-cdc-source-connector
 * https://github.com/scylladb/scylla-cdc-source-connector#advanced-administration
+* https://github.com/scylladb/scylla-cdc-source-connector
