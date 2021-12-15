@@ -32,3 +32,14 @@ bin/pulsar-admin sinks create --tenant public --namespace default --name "scylla
 <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.11.3/b-2.1.1/b-html5-2.1.1/b-print-2.1.1/cr-1.5.5/date-1.1.1/sc-2.0.5/datatables.min.js"></script>
 
 ````
+
+#### Info
+
+
+````
+bin/pulsar-client consume "persistent://public/default/scyllacdcsource -s "cdcreader" -n 0
+````
+
+#### Reference
+* https://github.com/scylladb/scylla-cdc-source-connector
+* https://github.com/scylladb/scylla-cdc-source-connector#advanced-administration
