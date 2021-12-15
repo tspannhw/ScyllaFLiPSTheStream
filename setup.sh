@@ -13,9 +13,12 @@ bin/pulsar-client consume "persistent://public/default/energy" -s "mobile2" -n 0
 
 # create table from scylla cqlsh
 CREATE KEYSPACE pulsar_test_keyspace WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};
-CREATE TABLE pulsar_test_table (key text PRIMARY KEY, col text);
+CREATE TABLE pulsar_test_table (key text PRIMARY KEY, col text) with cdc = {'enabled': true};
 CREATE INDEX ON pulsar_test_table(col);
  
+alter table pulsar_test_keyspace.pulsar_test_table with cdc={'enabled': true};
+desc keyspace pulsar_test_keyspace;
+
 # query data - pulsar sql
 select from_utf8(__value__), __event_time__ from pulsar."public/default".chatresult2
 
