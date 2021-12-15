@@ -19,6 +19,9 @@ CREATE INDEX ON pulsar_test_table(col);
 alter table pulsar_test_keyspace.pulsar_test_table with cdc={'enabled': true};
 desc keyspace pulsar_test_keyspace;
 
+# generate scylla cdc table
+pulsar_test_keyspace.pulsar_test_table_scylla_cdc_log
+
 # query data - pulsar sql
 select from_utf8(__value__), __event_time__ from pulsar."public/default".chatresult2
 
