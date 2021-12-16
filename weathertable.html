@@ -1,0 +1,153 @@
+<html>
+<head>
+<title>Apache Pulsar - Websockets - Data Tables - Weather</title>
+<link rel="stylesheet" type="text/css"  href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+</head>
+<body bgcolor="white" text="black">
+<img data-v-c612f5f2="" alt="StreamNative Logo" src="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png" width="543" data-src="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png" data-srcset="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png 543w" data-sizes="(max-width: 543px) 100vw, 543px" class="w-56 mt-4 md:mt-0 g-image g-image--lazy g-image--loaded" srcset="https://streamnative.io/assets/static/sn-logo-vertical-dark.c516648.a34f97839dee38e7499aa0c21d0b2255.png 543w" sizes="(max-width: 543px) 100vw, 543px">
+<script>
+function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+/// send the information to the server
+function loadDoc() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("demo").innerHTML = '';
+    }
+  };
+
+
+}
+
+</script>
+        <br><br>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+
+                     <th><b>Location</th>
+                       <th><b>Obs Time</b></th>
+                       <th><b>Weather</b></th>
+                       <th><b>Temp</b></th>
+                       <th><b>Windchill</b></th>
+                            <th><b>Lat/Long</b></th>
+                       <th><b>Pressure</b></th>
+                       <th><b>Publish Time</b></th>
+                       <th><b> [--] </b></th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                       <th><b>Location</th>
+                       <th><b>Obs Time</b></th>
+                       <th><b>Weather</b></th>
+                       <th><b>Temp</b></th>
+                       <th><b>Windchill</b></th>
+                            <th><b>Lat/Long</b></th>
+                       <th><b>Pressure</b></th>
+                       <th><b>Publish Time</b></th>
+                       <th><b> [--] </b></th>
+            </tr>
+        </tfoot>
+    </table>
+
+<script>
+function isEmpty(val){
+    return (val === undefined || val == null || val.length <= 0) ? true : false;
+}
+function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+$(document).ready(function() {
+    var t = $('#example').DataTable();
+
+var wsUri = "ws://pulsar1:8080/ws/v2/consumer/persistent/public/default/weather/weatherreader?subscriptionType=Shared&receiverQueueSize=5000";
+
+websocket = new WebSocket(wsUri);
+websocket.onopen = function(evt) {
+   console.log('open');
+};
+websocket.onerror = function(evt) {console.log('ERR', evt)};
+websocket.onmessage = function(evt) {
+
+    var dataPoints = JSON.parse(evt.data);
+    if ( dataPoints === undefined || dataPoints == null || dataPoints.payload === undefined || dataPoints.payload == null ) {
+            return;
+    }
+    if (IsJsonString(atob(dataPoints.payload))) {
+         var pulsarMessage = JSON.parse(atob(dataPoints.payload));
+         if ( pulsarMessage === undefined || pulsarMessage == null ) {
+                 return;
+         }
+         var publishTime = " ";
+         if ( !isEmpty(dataPoints.publishTime) ) {
+                 publishTime = dataPoints.publishTime;
+         }
+        var pressure = " ";
+
+        if ( !isEmpty(pulsarMessage.pressure_string) ) {
+                pressure = pulsarMessage.pressure_string;
+        }
+
+        var windchill = " ";
+
+        if ( !isEmpty(pulsarMessage.windchill_string) ) {
+                windchill = pulsarMessage.windchill_string;
+        }
+
+        var imageName = " ";
+
+        if(isEmpty(pulsarMessage.icon_url_name)){
+                imageName = " &nbsp; ";
+        }
+        else {
+              imageName = "<img src=\"" +
+                           pulsarMessage.icon_url_base + pulsarMessage.icon_url_name  + "\" border=\"0\">";
+        }
+
+        var obsTime = " ";
+        if (!isEmpty(pulsarMessage.observation_time)) {
+                obsTime = pulsarMessage.observation_time;
+        }
+        var loc = " ";
+        if (!isEmpty(pulsarMessage.location) ){
+                loc = pulsarMessage.location;
+        }
+        var weather = " ";
+        if ( !isEmpty(pulsarMessage.weather) ) {
+                weather = pulsarMessage.weather;
+        }
+        var tempString = " " ;
+        if ( !isEmpty(pulsarMessage.temperature_string) ) {
+                tempString = pulsarMessage.temperature_string;
+        }
+        var latlong = pulsarMessage.latitude +","+pulsarMessage.longitude;
+
+                 t.row.add( [ loc, obsTime, weather, tempString, windchill, latlong,
+                              pressure, publishTime,imageName ] ).draw(true );
+       }
+};
+
+} );
+</script>
+<p>
+<p><img src="stylecloud.png" border="0"></p>
+</p><br>
+&copy; 2021/2022 Tim Spann @PaasDev - datainmotion.dev - streamnative.io
+</body>
+</html>
