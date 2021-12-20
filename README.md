@@ -2,11 +2,16 @@
 
 Scylla FLiPS The Stream With Apache Pulsar
 
-## Create
+## Create on Ubuntu
 
 ````
+sudo systemctl start docker
+docker run --name devscylla --hostname devscylla -d scylladb/scylla --smp 1
+docker container restart devscylla
+docker ps
+docker logs devscylla  | tail
+docker exec -it devscylla nodetool status
 
-  
 bin/pulsar-admin sink stop --name scylla-test-sink --namespace default --tenant public
 
 bin/pulsar-admin sinks delete --tenant public --namespace default --name scylla-test-sink
@@ -125,3 +130,4 @@ cdc = {'postimage': 'false', 'preimage': 'false', 'ttl': '86400', 'enabled': 'tr
 * https://github.com/scylladb/scylla-cdc-source-connector
 * https://github.com/scylladb/scylla-cdc-source-connector#advanced-administration
 * https://github.com/scylladb/scylla-cdc-source-connector
+* https://docs.scylladb.com/operating-scylla/procedures/tips/best-practices-scylla-on-docker/
