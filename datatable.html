@@ -135,12 +135,18 @@ $(document).ready(function() {
 var wsUri = "ws://pulsar1:8080/ws/v2/consumer/persistent/public/default/chatresult2/chatrreader?subscriptionType=Shared&receiverQueueSize=500";
 websocket = new WebSocket(wsUri);
 websocket.onopen = function(evt) {
-   console.log('open');
+   console.log('websocket connection open');
 };
 websocket.onerror = function(evt) {console.log('ERR', evt)};
 websocket.onmessage = function(evt) {
-
+    //console.log("evtdata:" + evt.data);
     var dataPoints = JSON.parse(evt.data);
+    //console.log("evtdata msgid:" + dataPoints.messageId);
+
+    if (websocket.readyState === WebSocket.OPEN) {
+        websocket.send("{\"messageId\": \"" + dataPoints.messageId + "\"}");
+    }
+
     if ( dataPoints === undefined || dataPoints == null || dataPoints.payload === undefined || dataPoints.payload == null ) {
             return;
     }
@@ -170,7 +176,7 @@ websocket.onmessage = function(evt) {
                  contactInfo = pulsarMessage.contactInfo;
          }
 
-                 t.row.add( [ sentiment, publishTime, comment, userInfo, contactInfo ] ).draw(true );
+         t.row.add( [ sentiment, publishTime, comment, userInfo, contactInfo ] ).draw(true );
        }
 };
 
